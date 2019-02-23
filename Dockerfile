@@ -158,13 +158,13 @@ ENTRYPOINT ["entrypoint.sh"]
 
 ENV TIMEZONE Asia/Tokyo
 
-ENV HOST_NAME smtp.example.com
+ENV HOST_NAME mail.example.com
 ENV DOMAIN_NAME example.com
 
 ENV MESSAGE_SIZE_LIMIT 10240000
 
-ENV AUTH_USER user
-ENV AUTH_PASSWORD password
+ENV AUTH_USER user1,user2
+ENV AUTH_PASSWORD password1,password2
 
 EXPOSE 25
 EXPOSE 587
