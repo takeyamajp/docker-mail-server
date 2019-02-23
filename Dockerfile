@@ -10,6 +10,10 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
+    echo 'virtual_mailbox_base = /mail'; \
+    echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
+    echo 'virtual_uid_maps = static:5000'; \
+    echo 'virtual_gid_maps = static:5000'; \
     echo 'home_mailbox = Maildir/'; \
     echo 'local_recipient_maps ='; \
     echo 'luser_relay = unknown_user@localhost'; \
@@ -116,18 +120,21 @@ RUN { \
     echo 'if [ -e /etc/sasldb2 ]; then'; \
     echo '  rm -f /etc/sasldb2'; \
     echo 'fi'; \
-    echo 'if [[ -e /etc/dovecot/users ]]; then'
-    echo '  rm -f /etc/dovecot/users'
-    echo 'fi'
-    echo 'ARRAY_USER=( `echo ${AUTH_USER} | tr "," " "`)'
-    echo 'ARRAY_PASSWORD=( `echo ${AUTH_PASSWORD} | tr "," " "`)'
-    echo 'INDEX=0'
-    echo 'for e in ${ARRAY_USER[@]}; do'
+    echo 'if [[ -e /etc/dovecot/users ]]; then'; \
+    echo '  rm -f /etc/dovecot/users'; \
+    echo '  rm -f /etc/postfix/vmailbox'; \
+    echo 'fi'; \
+    echo 'ARRAY_USER=( `echo ${AUTH_USER} | tr "," " "`)'; \
+    echo 'ARRAY_PASSWORD=( `echo ${AUTH_PASSWORD} | tr "," " "`)'; \
+    echo 'INDEX=0'; \
+    echo 'for e in ${ARRAY_USER[@]}; do'; \
     echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
-    echo '  echo ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]} >> /etc/dovecot/users'
-    echo '  let INDEX++'
-    echo 'done'
+    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]}" >> /etc/dovecot/users'; \
+    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
+    echo '  let INDEX++'; \
+    echo 'done'; \
     echo 'chown postfix:postfix /etc/sasldb2'; \
+    echo 'postmap /etc/postfix/vmailbox'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
@@ -138,6 +145,7 @@ RUN { \
     echo 'echo "myorigin = \$mydomain"'; \
     echo 'echo "smtpd_banner = \$myhostname ESMTP unknown"'; \
     echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
+    echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
     echo 'exec "$@"'; \
