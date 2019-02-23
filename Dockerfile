@@ -130,10 +130,15 @@ RUN { \
     echo 'INDEX=0'; \
     echo 'echo "test4"'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
+    echo 'echo "a"'; \
     echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
+    echo 'echo "b"'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]}" >> /etc/dovecot/users'; \
+    echo 'echo "c"'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
+    echo 'echo "d"'; \
     echo '  let INDEX++'; \
+    echo 'echo "e"'; \
     echo 'done'; \
     echo 'echo "test5"'; \
     echo 'chown postfix:postfix /etc/sasldb2'; \
