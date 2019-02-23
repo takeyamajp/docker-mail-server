@@ -12,6 +12,7 @@
     ENV HOST_NAME mail.example.com  
     ENV DOMAIN_NAME example.com
     
+    ENV MAILBOX_SIZE_LIMIT 0  
     ENV MESSAGE_SIZE_LIMIT 10240000
     
     ENV AUTH_USER user1,user2  
