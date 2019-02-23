@@ -129,7 +129,7 @@ RUN { \
     echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]}" >> /etc/dovecot/users'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
-    echo '  let INDEX++'; \
+    echo '  ((INDEX+=1))'; \
     echo 'done'; \
     echo 'chown postfix:postfix /etc/sasldb2'; \
     echo 'postmap /etc/postfix/vmailbox'; \
