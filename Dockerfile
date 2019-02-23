@@ -5,7 +5,6 @@ MAINTAINER "Hiroki Takeyama"
 RUN groupadd -g 5000 vmail; \
     useradd -g 5000 -u 5000 -s /sbin/nologin vmail; \
     mkdir /mailbox; \
-    chown -R vmail:vmail /mailbox; \
     yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
@@ -147,6 +146,7 @@ RUN { \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
     echo '#postmap /etc/postfix/vmailbox'; \
+    echo 'chown -R vmail:vmail /mailbox'; \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
     chmod +x /usr/local/bin/entrypoint.sh;
