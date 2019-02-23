@@ -146,8 +146,9 @@ RUN { \
     echo 'echo "mydomain = ${DOMAIN_NAME}"'; \
     echo 'echo "myorigin = \$mydomain"'; \
     echo 'echo "smtpd_banner = \$myhostname ESMTP unknown"'; \
-    echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
+    echo 'echo "virtual_mailbox_limit = ${MAILBOX_SIZE_LIMIT}"'; \
+    echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
     echo 'chown vmail:vmail /mailbox'; \
@@ -161,6 +162,7 @@ ENV TIMEZONE Asia/Tokyo
 ENV HOST_NAME mail.example.com
 ENV DOMAIN_NAME example.com
 
+ENV MAILBOX_SIZE_LIMIT 0
 ENV MESSAGE_SIZE_LIMIT 10240000
 
 ENV AUTH_USER user1,user2
