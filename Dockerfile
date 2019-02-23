@@ -4,7 +4,6 @@ MAINTAINER "Hiroki Takeyama"
 # postfix
 RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
-    sed -i 's/^\(mydestination = .*\)/\1, $mydomain/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_path = smtpd'; \
     echo 'smtpd_sasl_auth_enable = yes'; \
