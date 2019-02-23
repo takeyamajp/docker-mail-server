@@ -124,8 +124,8 @@ RUN { \
     echo '  rm -f /etc/dovecot/users'; \
     echo '  rm -f /etc/postfix/vmailbox'; \
     echo 'fi'; \
-    echo 'ARRAY_USER=( `echo ${AUTH_USER} | tr "," " "`)'; \
-    echo 'ARRAY_PASSWORD=( `echo ${AUTH_PASSWORD} | tr "," " "`)'; \
+    echo 'ARRAY_USER=(`echo ${AUTH_USER} | tr "," " "`)'; \
+    echo 'ARRAY_PASSWORD=(`echo ${AUTH_PASSWORD} | tr "," " "`)'; \
     echo 'INDEX=0'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
     echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
