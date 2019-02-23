@@ -133,7 +133,6 @@ RUN { \
     echo '  let INDEX++'; \
     echo 'done'; \
     echo 'chown postfix:postfix /etc/sasldb2'; \
-    echo 'postmap /etc/postfix/vmailbox'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
@@ -147,6 +146,7 @@ RUN { \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
+    echo 'postmap /etc/postfix/vmailbox'; \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
     chmod +x /usr/local/bin/entrypoint.sh;
