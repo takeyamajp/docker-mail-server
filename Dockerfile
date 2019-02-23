@@ -43,6 +43,31 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     yum clean all;
 
 # dovecot
+RUN yum -y install dovecot; \
+    groupadd -g 5000 vmail; \
+    useradd -g 5000 -u 5000 -s /sbin/nologin vmail; \
+    mkdir /mail; \
+    chown -R vmail:vmail /mail; \
+    echo 'mail_location = maildir:~/' >> /etc/dovecot/conf.d/10-mail.conf; \
+    echo 'disable_plaintext_auth = no' >> /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^\(!include auth-system.conf.ext\)/#\1/' /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^#\(!include auth-passwdfile.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^#\(!include auth-static.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
+    { \
+    echo 'passdb {'; \
+    echo '  driver = passwd-file'; \
+    echo '  args = scheme=CRYPT username_format=%u /etc/dovecot/users'; \
+    echo '}'; \
+    } > /etc/dovecot/conf.d/auth-passwdfile.conf.ext; \
+    { \
+    echo 'userdb {'; \
+    echo '  driver = static'; \
+    echo '  args = uid=vmail gid=vmail home=/mail/%u'; \
+    echo '}'; \
+    } > /etc/dovecot/conf.d/auth-static.conf.ext; \
+    sed -i 's/^\(ssl =\).*/\1 yes/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_cert = <.*\)/\1\/etc\/postfix\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_key = <.*\)/\1\/etc\/postfix\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
 
 # rsyslog
 RUN yum -y install rsyslog; \
@@ -66,6 +91,10 @@ RUN yum -y install epel-release; \
     echo 'startsecs=0'; \
     } > /etc/supervisord.d/postfix.ini; \
     { \
+    echo '[program:dovecot]'; \
+    echo 'command=/usr/sbin/dovecot -F'; \
+    } > /etc/supervisord.d/dovecot.ini; \
+    { \
     echo '[program:rsyslog]'; \
     echo 'command=/usr/sbin/rsyslogd -n'; \
     } > /etc/supervisord.d/rsyslog.ini; \
@@ -87,7 +116,17 @@ RUN { \
     echo 'if [ -e /etc/sasldb2 ]; then'; \
     echo '  rm -f /etc/sasldb2'; \
     echo 'fi'; \
-    echo 'echo "${AUTH_PASSWORD}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${AUTH_USER}'; \
+    echo 'if [[ -e /etc/dovecot/users ]]; then'
+    echo '  rm -f /etc/dovecot/users'
+    echo 'fi'
+    echo 'ARRAY_USER=( `echo ${AUTH_USER} | tr "," " "`)'
+    echo 'ARRAY_PASSWORD=( `echo ${AUTH_PASSWORD} | tr "," " "`)'
+    echo 'INDEX=0'
+    echo 'for e in ${ARRAY_USER[@]}; do'
+    echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
+    echo '  echo ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]} >> /etc/dovecot/users'
+    echo '  let INDEX++'
+    echo 'done'
     echo 'chown postfix:postfix /etc/sasldb2'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
@@ -120,5 +159,13 @@ EXPOSE 25
 EXPOSE 587
 
 EXPOSE 465
+
+EXPOSE 110
+EXPOSE 143
+
+EXPOSE 995
+EXPOSE 993
+
+VOLUME /mail
 
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
