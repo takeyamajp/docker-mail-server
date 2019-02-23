@@ -137,7 +137,7 @@ RUN { \
     echo 'echo "c"'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
     echo 'echo "d"'; \
-    echo '  let INDEX++'; \
+    echo '#  let INDEX++'; \
     echo 'echo "e"'; \
     echo 'done'; \
     echo 'echo "test5"'; \
