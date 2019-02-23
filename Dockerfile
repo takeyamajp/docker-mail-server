@@ -13,6 +13,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     echo 'home_mailbox = Maildir/'; \
     echo 'local_recipient_maps ='; \
     echo 'luser_relay = unknown_user@localhost'; \
+    virtual_mailbox_domains = example.com, example.net
     } >> /etc/postfix/main.cf; \
     { \
     echo 'pwcheck_method: auxprop'; \
