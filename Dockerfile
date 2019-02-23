@@ -2,7 +2,11 @@ FROM centos:centos7
 MAINTAINER "Hiroki Takeyama"
 
 # postfix
-RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
+RUN mkdir /mail; \
+    chown -R vmail:vmail /mail; \
+    groupadd -g 5000 vmail; \
+    useradd -g 5000 -u 5000 -s /sbin/nologin vmail; \
+    yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_path = smtpd'; \
@@ -14,7 +18,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
     echo 'virtual_uid_maps = static:5000'; \
     echo 'virtual_gid_maps = static:5000'; \
-    echo 'home_mailbox = Maildir/'; \
+    echo 'home_mailbox = /'; \
     echo 'local_recipient_maps ='; \
     echo 'luser_relay = unknown_user@localhost'; \
     } >> /etc/postfix/main.cf; \
@@ -48,10 +52,6 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
 
 # dovecot
 RUN yum -y install dovecot; \
-    groupadd -g 5000 vmail; \
-    useradd -g 5000 -u 5000 -s /sbin/nologin vmail; \
-    mkdir /mail; \
-    chown -R vmail:vmail /mail; \
     echo 'mail_location = maildir:~/' >> /etc/dovecot/conf.d/10-mail.conf; \
     echo 'disable_plaintext_auth = no' >> /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(!include auth-system.conf.ext\)/#\1/' /etc/dovecot/conf.d/10-auth.conf; \
@@ -72,6 +72,7 @@ RUN yum -y install dovecot; \
     sed -i 's/^\(ssl =\).*/\1 yes/' /etc/dovecot/conf.d/10-ssl.conf; \
     sed -i 's/^\(ssl_cert = <\).*/\1\/etc\/postfix\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
     sed -i 's/^\(ssl_key = <\).*/\1\/etc\/postfix\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    yum clean all;
 
 # rsyslog
 RUN yum -y install rsyslog; \
