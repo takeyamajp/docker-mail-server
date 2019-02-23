@@ -59,7 +59,7 @@ RUN yum -y install dovecot; \
     { \
     echo 'passdb {'; \
     echo '  driver = passwd-file'; \
-    echo '  args = scheme=CRYPT username_format=%u /etc/dovecot/users'; \
+    echo '  args = scheme=CRAM-MD5 username_format=%u /etc/dovecot/users'; \
     echo '}'; \
     } > /etc/dovecot/conf.d/auth-passwdfile.conf.ext; \
     { \
@@ -129,7 +129,7 @@ RUN { \
     echo 'INDEX=0'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
     echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
-    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:{PLAIN}${ARRAY_PASSWORD[${INDEX}]}" >> /etc/dovecot/users'; \
+    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:`doveadm pw -p ${ARRAY_PASSWORD[${INDEX}]}`" >> /etc/dovecot/users'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
     echo '  mkdir -p /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
