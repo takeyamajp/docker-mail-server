@@ -2,10 +2,10 @@ FROM centos:centos7
 MAINTAINER "Hiroki Takeyama"
 
 # postfix
-RUN mkdir /mailbox; \
-    chown -R vmail:vmail /mailbox; \
-    groupadd -g 5000 vmail; \
+RUN groupadd -g 5000 vmail; \
     useradd -g 5000 -u 5000 -s /sbin/nologin vmail; \
+    mkdir /mailbox; \
+    chown -R vmail:vmail /mailbox; \
     yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
