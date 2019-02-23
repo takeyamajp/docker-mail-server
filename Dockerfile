@@ -119,8 +119,6 @@ RUN { \
     echo 'openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
     echo 'if [ -e /etc/sasldb2 ]; then'; \
     echo '  rm -f /etc/sasldb2'; \
-    echo 'fi'; \
-    echo 'if [[ -e /etc/dovecot/users ]]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
     echo '  rm -f /etc/postfix/vmailbox'; \
     echo 'fi'; \
