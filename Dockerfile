@@ -114,6 +114,7 @@ RUN yum -y install epel-release; \
 RUN { \
     echo '#!/bin/bash -eu'; \
     echo 'rm -f /etc/localtime'; \
+    echo 'echo "test"'; \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
     echo 'openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
     echo 'openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
