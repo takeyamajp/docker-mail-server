@@ -4,12 +4,16 @@ MAINTAINER "Hiroki Takeyama"
 # postfix
 RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
+    sed -i 's/^\(mydestination = .*\)/\1, $mydomain/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_path = smtpd'; \
     echo 'smtpd_sasl_auth_enable = yes'; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
+    echo 'home_mailbox = Maildir/'; \
+    echo 'local_recipient_maps ='; \
+    echo 'luser_relay = unknown_user@localhost'; \
     } >> /etc/postfix/main.cf; \
     { \
     echo 'pwcheck_method: auxprop'; \
@@ -21,6 +25,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_tls_wrappermode.*\)/\1/' /etc/postfix/master.cf; \
+    echo 'unknown_user: /dev/null' >> /etc/aliases; \
     newaliases; \
     openssl genrsa -aes128 -passout pass:dummy -out "/etc/postfix/key.pass.pem" 2048; \
     openssl rsa -passin pass:dummy -in "/etc/postfix/key.pass.pem" -out "/etc/postfix/key.pem"; \
@@ -37,6 +42,8 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     echo 'tls_random_source = dev:/dev/urandom'; \
     } >> /etc/postfix/main.cf; \
     yum clean all;
+
+# dovecot
 
 # rsyslog
 RUN yum -y install rsyslog; \
