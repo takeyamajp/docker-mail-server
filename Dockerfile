@@ -66,8 +66,8 @@ RUN yum -y install dovecot; \
     echo '}'; \
     } > /etc/dovecot/conf.d/auth-static.conf.ext; \
     sed -i 's/^\(ssl =\).*/\1 yes/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_cert = <.*\)/\1\/etc\/postfix\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_key = <.*\)/\1\/etc\/postfix\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_cert = <\).*/\1\/etc\/postfix\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_key = <\).*/\1\/etc\/postfix\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
 
 # rsyslog
 RUN yum -y install rsyslog; \
