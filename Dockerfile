@@ -116,6 +116,11 @@ RUN { \
     echo 'rm -f /etc/localtime'; \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
     echo 'if [ ! -e /etc/postfix/cert.pem ]; then'; \
+    echo '  CN=`openssl x509 -in /etc/postfix/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.]\+\)$/\1/"`'; \
+    echo '  echo ${CN}'; \
+    echo 'fi'; \
+    echo 'if [ ! -e /etc/postfix/cert.pem ] || [ -e /etc/postfix/cert.pem ] && [ ${CN} != ${HOST_NAME} ]; then'; \
+    echo '  echo create_cert'; \
     echo '  openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
     echo 'fi'; \
