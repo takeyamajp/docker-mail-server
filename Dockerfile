@@ -53,6 +53,7 @@ RUN groupadd -g 5000 vmail; \
 RUN yum -y install dovecot; \
     echo 'mail_location = maildir:~/' >> /etc/dovecot/conf.d/10-mail.conf; \
     echo 'disable_plaintext_auth = no' >> /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^\(auth_mechanisms =\).*/\1 plain login digest-md5 cram-md5/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(!include auth-system.conf.ext\)/#\1/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^#\(!include auth-passwdfile.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^#\(!include auth-static.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
