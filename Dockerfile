@@ -115,7 +115,7 @@ RUN { \
     echo '#!/bin/bash -eu'; \
     echo 'rm -f /etc/localtime'; \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
-    echo 'if [ ! -e /etc/postfix/cert.pem ]; then'; \
+    echo 'if [ -e /etc/postfix/cert.pem ]; then'; \
     echo '  CN=`openssl x509 -in /etc/postfix/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.]\+\)$/\1/"`'; \
     echo '  echo ${CN}'; \
     echo 'fi'; \
