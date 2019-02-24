@@ -15,8 +15,8 @@ RUN groupadd -g 5000 vmail; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
     echo 'virtual_mailbox_base = /mailbox'; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
-    echo 'virtual_uid_maps = static:5000'; \
     echo 'virtual_gid_maps = static:5000'; \
+    echo 'virtual_uid_maps = static:5000'; \
     echo 'home_mailbox = /'; \
     echo 'local_recipient_maps ='; \
     echo 'luser_relay = unknown_user@localhost'; \
