@@ -123,8 +123,6 @@ RUN { \
     echo 'if [ ! -e /etc/postfix/cert.pem ] || [ -e /etc/postfix/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
     echo '  openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
-    echo '  cp -f /etc/postfix/cert.pem /mailbox/cert.pem'; \
-    echo '  echo "The TLS/SSL certificate was created so import it into your OS."'; \
     echo 'fi'; \
     echo 'if [ -e /etc/sasldb2 ]; then'; \
     echo '  rm -f /etc/sasldb2'; \
