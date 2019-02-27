@@ -8,7 +8,8 @@ RUN groupadd -g 5000 vmail; \
     yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
-    echo 'smtpd_sasl_path = smtpd'; \
+    echo 'smtpd_sasl_type = dovecot'; \
+    echo 'smtpd_sasl_path = private/auth'; \
     echo 'smtpd_sasl_auth_enable = yes'; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
@@ -21,11 +22,6 @@ RUN groupadd -g 5000 vmail; \
     echo 'local_recipient_maps ='; \
     echo 'luser_relay = unknown_user@localhost'; \
     } >> /etc/postfix/main.cf; \
-    { \
-    echo 'pwcheck_method: auxprop'; \
-    echo 'auxprop_plugin: sasldb'; \
-    echo 'mech_list: PLAIN LOGIN CRAM-MD5 DIGEST-MD5'; \
-    } > /etc/sasl2/smtpd.conf; \
     sed -i 's/^#\(submission .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_sasl_auth_enable.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
@@ -51,6 +47,7 @@ RUN groupadd -g 5000 vmail; \
 
 # dovecot
 RUN yum -y install dovecot; \
+    sed -i '/^service auth {$/a unix_listener /var/spool/postfix/private/auth {\nmode = 0660\nuser = postfix\ngroup = postfix\n}' /etc/dovecot/conf.d/10-master.conf; \
     echo 'mail_location = maildir:~/' >> /etc/dovecot/conf.d/10-mail.conf; \
     echo 'disable_plaintext_auth = no' >> /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(auth_mechanisms =\).*/\1 plain login digest-md5 cram-md5/' /etc/dovecot/conf.d/10-auth.conf; \
@@ -125,8 +122,7 @@ RUN { \
     echo '  openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
     echo 'fi'; \
-    echo 'if [ -e /etc/sasldb2 ]; then'; \
-    echo '  rm -f /etc/sasldb2'; \
+    echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
     echo '  rm -f /etc/postfix/vmailbox'; \
     echo 'fi'; \
@@ -134,14 +130,12 @@ RUN { \
     echo 'ARRAY_PASSWORD=(`echo ${AUTH_PASSWORD} | tr "," " "`)'; \
     echo 'INDEX=0'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
-    echo '  echo "${ARRAY_PASSWORD[${INDEX}]}" | /usr/sbin/saslpasswd2 -p -c -u ${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:`doveadm pw -p ${ARRAY_PASSWORD[${INDEX}]}`" >> /etc/dovecot/users'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
     echo '  mkdir -p /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'chown postfix:postfix /etc/sasldb2'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
