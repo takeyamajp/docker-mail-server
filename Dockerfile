@@ -128,9 +128,9 @@ RUN { \
     echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '  cp -f /mailbox/cert.pem /cert/cert.pem'; \
-    echo '  cp -f /mailbox/key.pem /cert/key.pem'; \
-    echo '  chmod a+r /cert/*'; \
+    echo '#  cp -f /mailbox/cert.pem /cert/cert.pem'; \
+    echo '#  cp -f /mailbox/key.pem /cert/key.pem'; \
+    echo '#  chmod a+r /cert/*'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
