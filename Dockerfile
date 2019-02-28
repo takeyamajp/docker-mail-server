@@ -122,6 +122,10 @@ RUN { \
     echo '  openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
     echo 'fi'; \
+    echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
+    echo '  cp -f /mailbox/cert.pem /etc/postfix/cert.pem'; \
+    echo '  cp -f /mailbox/key.pem /etc/postfix/key.pem'; \
+    echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
     echo '  rm -f /etc/postfix/vmailbox'; \
