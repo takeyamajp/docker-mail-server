@@ -3,9 +3,11 @@ MAINTAINER "Hiroki Takeyama"
 
 # certificate
 RUN mkdir /cert; \
+    yum -y openssl; \
     openssl genrsa -aes128 -passout pass:dummy -out "/cert/key.pass.pem" 2048; \
     openssl rsa -passin pass:dummy -in "/cert/key.pass.pem" -out "/cert/key.pem"; \
-    rm -f "/cert/key.pass.pem";
+    rm -f /cert/key.pass.pem; \
+    yum clean all;
 
 # mailbox
 RUN mkdir /mailbox; \
@@ -13,7 +15,7 @@ RUN mkdir /mailbox; \
     useradd -u 5000 -g vmail -s /sbin/nologin vmail;
 
 # postfix
-RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
+RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
@@ -128,9 +130,8 @@ RUN { \
     echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '#  cp -f /mailbox/cert.pem /cert/cert.pem'; \
-    echo '#  cp -f /mailbox/key.pem /cert/key.pem'; \
-    echo '#  chmod a+r /cert/*'; \
+    echo '  cp -f /mailbox/cert.pem /cert/cert.pem'; \
+    echo '  cp -f /mailbox/key.pem /cert/key.pem'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
