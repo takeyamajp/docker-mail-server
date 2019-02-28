@@ -1,4 +1,4 @@
-# docker-mail-server
+# mail-server
 [![Docker Stars](https://img.shields.io/docker/stars/takeyamajp/mail-server.svg)](https://hub.docker.com/r/takeyamajp/mail-server/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/takeyamajp/mail-server.svg)](https://hub.docker.com/r/takeyamajp/mail-server/)
 [![](https://img.shields.io/badge/GitHub-Dockerfile-orange.svg)](https://github.com/takeyamajp/docker-mail-server/blob/master/Dockerfile)
