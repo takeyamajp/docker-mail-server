@@ -1,11 +1,19 @@
 FROM centos:centos7
 MAINTAINER "Hiroki Takeyama"
 
+# certificate
+RUN mkdir /cert; \
+    openssl genrsa -aes128 -passout pass:dummy -out "/cert/key.pass.pem" 2048; \
+    openssl rsa -passin pass:dummy -in "/cert/key.pass.pem" -out "/cert/key.pem"; \
+    rm -f "/cert/key.pass.pem";
+
+# mailbox
+RUN mkdir /mailbox; \
+    groupadd -g 5000 vmail; \
+    useradd -u 5000 -g vmail -s /sbin/nologin vmail;
+
 # postfix
-RUN groupadd -g 5000 vmail; \
-    useradd -u 5000 -g vmail -s /sbin/nologin vmail; \
-    mkdir /mailbox; \
-    yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
+RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 openssl; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
@@ -29,12 +37,9 @@ RUN groupadd -g 5000 vmail; \
     sed -i 's/^#\(.*smtpd_tls_wrappermode.*\)/\1/' /etc/postfix/master.cf; \
     echo 'unknown_user: /dev/null' >> /etc/aliases; \
     newaliases; \
-    openssl genrsa -aes128 -passout pass:dummy -out "/etc/postfix/key.pass.pem" 2048; \
-    openssl rsa -passin pass:dummy -in "/etc/postfix/key.pass.pem" -out "/etc/postfix/key.pem"; \
-    rm -f "/etc/postfix/key.pass.pem"; \
     { \
-    echo 'smtpd_tls_cert_file = /etc/postfix/cert.pem'; \
-    echo 'smtpd_tls_key_file = /etc/postfix/key.pem'; \
+    echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
+    echo 'smtpd_tls_key_file = /cert/key.pem'; \
     echo 'smtpd_tls_security_level = may'; \
     echo 'smtpd_tls_received_header = yes'; \
     echo 'smtpd_tls_loglevel = 1'; \
@@ -67,8 +72,8 @@ RUN yum -y install dovecot; \
     echo '}'; \
     } > /etc/dovecot/conf.d/auth-static.conf.ext; \
     sed -i 's/^\(ssl =\).*/\1 yes/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_cert = <\).*/\1\/etc\/postfix\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_key = <\).*/\1\/etc\/postfix\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_cert = <\).*/\1\/cert\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_key = <\).*/\1\/cert\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
     yum clean all;
 
 # rsyslog
@@ -84,10 +89,8 @@ RUN yum -y install epel-release; \
     yum -y --enablerepo=epel install supervisor; \
     sed -i 's/^\(nodaemon\)=false/\1=true/' /etc/supervisord.conf; \
     sed -i 's/^;\(user\)=chrism/\1=root/' /etc/supervisord.conf; \
-    sed -i '/^\[unix_http_server\]$/a username=dummy' /etc/supervisord.conf; \
-    sed -i '/^\[unix_http_server\]$/a password=dummy' /etc/supervisord.conf; \
-    sed -i '/^\[supervisorctl\]$/a username=dummy' /etc/supervisord.conf; \
-    sed -i '/^\[supervisorctl\]$/a password=dummy' /etc/supervisord.conf; \
+    sed -i '/^\[unix_http_server\]$/a username=dummy\npassword=dummy' /etc/supervisord.conf; \
+    sed -i '/^\[supervisorctl\]$/a username=dummy\npassword=dummy' /etc/supervisord.conf; \
     { \
     echo '[program:postfix]'; \
     echo 'command=/usr/sbin/postfix -c /etc/postfix start'; \
@@ -114,17 +117,19 @@ RUN { \
     echo '#!/bin/bash -eu'; \
     echo 'rm -f /etc/localtime'; \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
+    echo 'rm -f /var/log/maillog'; \
+    echo 'touch /var/log/maillog'; \
     echo 'CN=;'; \
-    echo 'if [ -e /etc/postfix/cert.pem ]; then'; \
-    echo '  CN=`openssl x509 -in /etc/postfix/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.]\+\)$/\1/"`'; \
+    echo 'if [ -e /cert/cert.pem ]; then'; \
+    echo '  CN=`openssl x509 -in /cert/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.]\+\)$/\1/"`'; \
     echo 'fi'; \
-    echo 'if [ ! -e /etc/postfix/cert.pem ] || [ -e /etc/postfix/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
-    echo '  openssl req -new -key "/etc/postfix/key.pem" -subj "/CN=${HOST_NAME}" -out "/etc/postfix/csr.pem"'; \
-    echo '  openssl x509 -req -days 36500 -in "/etc/postfix/csr.pem" -signkey "/etc/postfix/key.pem" -out "/etc/postfix/cert.pem" &>/dev/null'; \
+    echo 'if [ ! -e /cert/cert.pem ] || [ -e /cert/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
+    echo '  openssl req -new -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
+    echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '  cp -f /mailbox/cert.pem /etc/postfix/cert.pem'; \
-    echo '  cp -f /mailbox/key.pem /etc/postfix/key.pem'; \
+    echo '  cp -f /mailbox/cert.pem /cert/cert.pem'; \
+    echo '  cp -f /mailbox/key.pem /cert/key.pem'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
@@ -141,8 +146,6 @@ RUN { \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
     echo 'postmap /etc/postfix/vmailbox'; \
-    echo 'rm -f /var/log/maillog'; \
-    echo 'touch /var/log/maillog'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
