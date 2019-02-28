@@ -130,6 +130,7 @@ RUN { \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
     echo '  cp -f /mailbox/cert.pem /cert/cert.pem'; \
     echo '  cp -f /mailbox/key.pem /cert/key.pem'; \
+    echo '  chmod a+r /cert/*'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
