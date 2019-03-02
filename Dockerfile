@@ -36,7 +36,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_tls_wrappermode.*\)/\1/' /etc/postfix/master.cf; \
-    echo 'unknown_user: /dev/null' >> /etc/aliases; \
+    echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
     { \
     echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
@@ -153,7 +153,7 @@ RUN { \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'echo "@${DOMAIN_NAME} unknown_user@localhost" >> /etc/postfix/virtual'; \
+    echo 'echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
