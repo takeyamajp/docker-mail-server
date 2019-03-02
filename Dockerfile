@@ -148,12 +148,13 @@ RUN { \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:`doveadm pw -p ${ARRAY_PASSWORD[${INDEX}]}`" >> /etc/dovecot/users'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
+    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/virtual'; \
     echo '  mkdir -p /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'postmap /etc/postfix/vmailbox'; \
     echo 'echo "@${DOMAIN_NAME} unknown_user@localhost" >> /etc/postfix/virtual'; \
+    echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
