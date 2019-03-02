@@ -129,9 +129,15 @@ RUN { \
     echo '  openssl req -new -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
+    echo 'sed -i "s/^\(smtpd_tls_cert_file\) =.*/\1 = \/cert\/cert.pem/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(smtpd_tls_key_file\) =.*/\1 = \/cert\/key.pem/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(ssl_cert = <\).*/\1\/cert\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
+    echo 'sed -i "s/^\(ssl_key = <\).*/\1\/cert\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '  cp -f /mailbox/cert.pem /cert/cert.pem'; \
-    echo '  cp -f /mailbox/key.pem /cert/key.pem'; \
+    echo '  sed -i "s/^\(smtpd_tls_cert_file\) =.*/\1 = \/mailbox\/cert.pem/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_tls_key_file\) =.*/\1 = \/mailbox\/key.pem/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(ssl_cert = <\).*/\1\/mailbox\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
+    echo '  sed -i "s/^\(ssl_key = <\).*/\1\/mailbox\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
