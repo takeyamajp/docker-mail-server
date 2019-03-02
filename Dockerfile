@@ -153,7 +153,7 @@ RUN { \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
     echo 'postmap /etc/postfix/vmailbox'; \
-    echo 'echo "@${DOMAIN_NAME} unknown_user" >> /etc/postfix/virtual'; \
+    echo 'echo "@${DOMAIN_NAME} unknown_user@localhost" >> /etc/postfix/virtual'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
