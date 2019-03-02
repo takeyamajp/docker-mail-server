@@ -26,11 +26,10 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
     echo 'virtual_mailbox_base = /mailbox'; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
+    echo 'virtual_alias_maps = hash:/etc/postfix/virtual'; \
     echo 'virtual_gid_maps = static:5000'; \
     echo 'virtual_uid_maps = static:5000'; \
     echo 'home_mailbox = /'; \
-    echo 'local_recipient_maps ='; \
-    echo 'luser_relay = unknown_user@localhost'; \
     } >> /etc/postfix/main.cf; \
     sed -i 's/^#\(submission .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_sasl_auth_enable.*\)/\1/' /etc/postfix/master.cf; \
@@ -154,6 +153,8 @@ RUN { \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
     echo 'postmap /etc/postfix/vmailbox'; \
+    echo 'echo "@${DOMAIN_NAME} unknown_user" >> /etc/postfix/virtual'; \
+    echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
