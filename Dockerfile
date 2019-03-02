@@ -17,7 +17,6 @@ RUN mkdir /mailbox; \
 # postfix
 RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
-    sed -i 's/^\(mydestination = .*\)/\1, \$mydomain/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
     echo 'smtpd_sasl_path = private/auth'; \
@@ -154,7 +153,7 @@ RUN { \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'echo "@${DOMAIN_NAME} unknown" >> /etc/postfix/virtual'; \
+    echo 'echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
