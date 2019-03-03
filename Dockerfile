@@ -17,6 +17,7 @@ RUN mkdir /mailbox; \
 # postfix
 RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
+    sed -i 's/^\(mydestination =\).*/\1 localhost/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
     echo 'smtpd_sasl_path = private/auth'; \
