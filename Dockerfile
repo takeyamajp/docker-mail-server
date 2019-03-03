@@ -141,6 +141,7 @@ RUN { \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
     echo '  rm -f /etc/postfix/vmailbox'; \
+    echo '  rm -f /etc/postfix/virtual'; \
     echo 'fi'; \
     echo 'ARRAY_USER=(`echo ${AUTH_USER} | tr "," " "`)'; \
     echo 'ARRAY_PASSWORD=(`echo ${AUTH_PASSWORD} | tr "," " "`)'; \
