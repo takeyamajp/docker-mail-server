@@ -162,7 +162,6 @@ RUN { \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
     echo 'echo "myhostname = ${HOST_NAME}"'; \
     echo 'echo "mydomain = ${DOMAIN_NAME}"'; \
-    echo 'echo "myorigin = \$mydomain"'; \
     echo 'echo "smtpd_banner = \$myhostname ESMTP unknown"'; \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
     echo 'echo "virtual_mailbox_limit = ${MAILBOX_SIZE_LIMIT}"'; \
