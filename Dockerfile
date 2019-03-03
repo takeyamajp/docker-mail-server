@@ -15,7 +15,8 @@ RUN mkdir /mailbox; \
     useradd -u 5000 -g vmail -s /sbin/nologin vmail;
 
 # postfix
-RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
+RUN yum -y install epel-release; \
+    yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 pypolicyd-spf; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
@@ -23,7 +24,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     echo 'smtpd_sasl_auth_enable = yes'; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
-    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
+    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
     echo 'smtpd_client_restrictions = permit_mynetworks, reject_unknown_client, permit'; \
     echo 'virtual_mailbox_base = /mailbox'; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
@@ -37,6 +38,7 @@ RUN yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_tls_wrappermode.*\)/\1/' /etc/postfix/master.cf; \
+    echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
     { \
