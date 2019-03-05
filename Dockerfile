@@ -24,8 +24,11 @@ RUN yum -y install epel-release; \
     echo 'smtpd_sasl_auth_enable = yes'; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
+    echo 'disable_vrfy_command = yes'; \
+    echo 'smtpd_helo_required = yes'; \
+    echo 'smtpd_helo_restrictions = = permit_mynetworks, reject_invalid_hostname, reject_unknown_hostname'; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
-    echo 'smtpd_client_restrictions = permit_mynetworks, reject_unknown_client, permit'; \
+    echo 'smtpd_sender_restrictions = reject_unknown_sender_domain'; \
     echo 'virtual_mailbox_base = /mailbox'; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
     echo 'virtual_alias_maps = hash:/etc/postfix/virtual'; \
