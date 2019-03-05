@@ -21,7 +21,7 @@ RUN yum -y install epel-release; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
     echo 'smtpd_sasl_path = private/auth'; \
-    echo 'smtpd_sasl_auth_enable = yes'; \
+    echo 'smtpd_sasl_auth_enable = no'; \
     echo 'broken_sasl_auth_clients = yes'; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
     echo 'disable_vrfy_command = yes'; \
