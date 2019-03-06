@@ -9,6 +9,9 @@
     
     ENV TIMEZONE Asia/Tokyo
     
+    ENV DISABLE_SMTP_AUTH_ON_PORT_25 = true  
+    ENV SEND_BOUNCE_MAIL = true
+    
     ENV HOST_NAME mail.example.com  
     ENV DOMAIN_NAME example.com
     
