@@ -9,9 +9,6 @@
     
     ENV TIMEZONE Asia/Tokyo
     
-    ENV DISABLE_SMTP_AUTH_ON_PORT_25 = true  
-    ENV SEND_BOUNCE_MAIL = true
-    
     ENV HOST_NAME mail.example.com  
     ENV DOMAIN_NAME example.com
     
@@ -20,6 +17,9 @@
     
     ENV AUTH_USER user1,user2  
     ENV AUTH_PASSWORD password1,password2
+    
+    ENV DISABLE_SMTP_AUTH_ON_PORT_25 true  
+    ENV SEND_BOUNCE_MAIL true
     
     # SMTP  
     EXPOSE 25  
