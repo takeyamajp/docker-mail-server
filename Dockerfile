@@ -37,11 +37,11 @@ RUN yum -y install epel-release; \
     echo 'home_mailbox = /'; \
     } >> /etc/postfix/main.cf; \
     sed -i 's/^#\(submission .*\)/\1/' /etc/postfix/master.cf; \
-    sed -i 's/^#\(.*syslog_name.*\)/\1/' /etc/postfix/master.cf; \
-    sed -i 's/^#\(.*smtpd_sasl_auth_enable.*\)/\1/' /etc/postfix/master.cf; \
-    sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
-    sed -i 's/^#\(.*smtpd_tls_wrappermode.*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.* syslog_name=.*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.* smtpd_sasl_auth_enable=.*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.* smtpd_recipient_restrictions=.*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.* smtpd_tls_wrappermode=.*\)/\1/' /etc/postfix/master.cf; \
     echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
@@ -135,15 +135,19 @@ RUN { \
     echo '  openssl req -new -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
-    echo 'sed -i "s/^\(smtpd_tls_cert_file\) =.*/\1 = \/cert\/cert.pem/" /etc/postfix/main.cf'; \
-    echo 'sed -i "s/^\(smtpd_tls_key_file\) =.*/\1 = \/cert\/key.pem/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(smtpd_tls_cert_file =\).*/\1 \/cert\/cert.pem/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(smtpd_tls_key_file =\).*/\1 \/cert\/key.pem/" /etc/postfix/main.cf'; \
     echo 'sed -i "s/^\(ssl_cert = <\).*/\1\/cert\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo 'sed -i "s/^\(ssl_key = <\).*/\1\/cert\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '  sed -i "s/^\(smtpd_tls_cert_file\) =.*/\1 = \/mailbox\/cert.pem/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^\(smtpd_tls_key_file\) =.*/\1 = \/mailbox\/key.pem/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_tls_cert_file =\).*/\1 \/mailbox\/cert.pem/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_tls_key_file =\).*/\1 \/mailbox\/key.pem/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^\(ssl_cert = <\).*/\1\/mailbox\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo '  sed -i "s/^\(ssl_key = <\).*/\1\/mailbox\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
+    echo 'fi'; \
+    echo 'sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 yes" /etc/postfix/main.cf'; \
+    echo 'if [ ${DISABLE_SMTP_AUTH_ON_PORT_25,,} = "true" ]; then'; \
+    echo '  sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 no" /etc/postfix/main.cf'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
@@ -161,7 +165,9 @@ RUN { \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
+    echo 'if [ ${SEND_BOUNCE_MAIL,,} != "true" ]; then'; \
+    echo '  echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
+    echo 'fi'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
@@ -182,6 +188,9 @@ RUN { \
 ENTRYPOINT ["entrypoint.sh"]
 
 ENV TIMEZONE Asia/Tokyo
+
+ENV DISABLE_SMTP_AUTH_ON_PORT_25 = true
+ENV SEND_BOUNCE_MAIL = true
 
 ENV HOST_NAME mail.example.com
 ENV DOMAIN_NAME example.com
