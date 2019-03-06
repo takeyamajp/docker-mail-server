@@ -37,6 +37,7 @@ RUN yum -y install epel-release; \
     echo 'home_mailbox = /'; \
     } >> /etc/postfix/main.cf; \
     sed -i 's/^#\(submission .*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.*syslog_name.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_sasl_auth_enable.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.*smtpd_recipient_restrictions.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
