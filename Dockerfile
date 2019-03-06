@@ -145,9 +145,9 @@ RUN { \
     echo '  sed -i "s/^\(ssl_cert = <\).*/\1\/mailbox\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo '  sed -i "s/^\(ssl_key = <\).*/\1\/mailbox\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
     echo 'fi'; \
-    echo 'sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 yes" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 yes/" /etc/postfix/main.cf'; \
     echo 'if [ ${DISABLE_SMTP_AUTH_ON_PORT_25,,} = "true" ]; then'; \
-    echo '  sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 no" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 no/" /etc/postfix/main.cf'; \
     echo 'fi'; \
     echo 'if [ -e /etc/dovecot/users ]; then'; \
     echo '  rm -f /etc/dovecot/users'; \
