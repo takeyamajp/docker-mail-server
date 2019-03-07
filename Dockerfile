@@ -165,7 +165,7 @@ RUN { \
     echo '  chown -R vmail:vmail /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
-    echo 'if [ ${SEND_BOUNCE_MAIL,,} != "true" ]; then'; \
+    echo 'if [ ${BOUNCE_MESSAGE,,} != "true" ]; then'; \
     echo '  echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
     echo 'fi'; \
     echo 'postmap /etc/postfix/vmailbox'; \
@@ -199,7 +199,7 @@ ENV AUTH_USER user1,user2
 ENV AUTH_PASSWORD password1,password2
 
 ENV DISABLE_SMTP_AUTH_ON_PORT_25 true
-ENV SEND_BOUNCE_MAIL true
+ENV BOUNCE_MESSAGE true
 
 # SMTP
 EXPOSE 25
