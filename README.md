@@ -28,12 +28,14 @@
     # SMTPS  
     EXPOSE 465
     
-    # POP3/IMAP  
+    # POP3  
     EXPOSE 110  
+    # IMAP  
     EXPOSE 143
     
-    # POP3S/IMAPS  
+    # POP3S  
     EXPOSE 995  
+    # IMAPS  
     EXPOSE 993
     
     VOLUME /mailbox
