@@ -23,8 +23,8 @@
     
     # SMTP  
     EXPOSE 25  
-    EXPOSE 587
-    
+    # Submission  
+    EXPOSE 587  
     # SMTPS  
     EXPOSE 465
     
