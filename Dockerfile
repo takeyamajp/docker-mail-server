@@ -29,6 +29,15 @@ RUN yum -y install epel-release; \
     echo 'smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_hostname, reject_non_fqdn_hostname, reject_unknown_hostname'; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
     echo 'smtpd_sender_restrictions = reject_unknown_sender_domain'; \
+    echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
+    echo 'smtpd_tls_key_file = /cert/key.pem'; \
+    echo 'smtpd_tls_security_level = may'; \
+    echo 'smtpd_tls_received_header = yes'; \
+    echo 'smtpd_tls_loglevel = 1'; \
+    echo 'smtp_tls_security_level = may'; \
+    echo 'smtp_tls_loglevel = 1'; \
+    echo 'smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache'; \
+    echo 'tls_random_source = dev:/dev/urandom'; \
     echo 'virtual_mailbox_base = /mailbox'; \
     echo 'virtual_mailbox_maps = hash:/etc/postfix/vmailbox'; \
     echo 'virtual_alias_maps = hash:/etc/postfix/virtual'; \
@@ -45,17 +54,6 @@ RUN yum -y install epel-release; \
     echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
-    { \
-    echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
-    echo 'smtpd_tls_key_file = /cert/key.pem'; \
-    echo 'smtpd_tls_security_level = may'; \
-    echo 'smtpd_tls_received_header = yes'; \
-    echo 'smtpd_tls_loglevel = 1'; \
-    echo 'smtp_tls_security_level = may'; \
-    echo 'smtp_tls_loglevel = 1'; \
-    echo 'smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache'; \
-    echo 'tls_random_source = dev:/dev/urandom'; \
-    } >> /etc/postfix/main.cf; \
     yum clean all;
 
 # dovecot
@@ -170,6 +168,7 @@ RUN { \
     echo 'fi'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
+    echo 'chown vmail:vmail /mailbox'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
@@ -181,7 +180,6 @@ RUN { \
     echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
-    echo 'chown vmail:vmail /mailbox'; \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
     chmod +x /usr/local/bin/entrypoint.sh;
@@ -203,8 +201,8 @@ ENV BOUNCE_MESSAGE true
 
 # SMTP
 EXPOSE 25
+# Submission
 EXPOSE 587
-
 # SMTPS
 EXPOSE 465
 
