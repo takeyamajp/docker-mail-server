@@ -53,6 +53,7 @@ RUN yum -y install epel-release; \
     sed -i 's/^#\(.* smtpd_tls_wrappermode=.*\)/\1/' /etc/postfix/master.cf; \
     echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
     sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
+    sed -i 's/^\(Mail_From_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
     yum clean all;
