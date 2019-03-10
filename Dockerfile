@@ -44,6 +44,9 @@ RUN yum -y install epel-release; \
     echo 'virtual_gid_maps = static:5000'; \
     echo 'virtual_uid_maps = static:5000'; \
     echo 'home_mailbox = /'; \
+    echo 'notify_classes = bounce, resource, software'; \
+    echo 'bounce_notice_recipient ='; \
+    echo 'error_notice_recipient ='; \
     } >> /etc/postfix/main.cf; \
     sed -i 's/^#\(submission .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
@@ -166,6 +169,8 @@ RUN { \
     echo 'if [ ${BOUNCE_MESSAGE,,} != "true" ]; then'; \
     echo '  echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
     echo 'fi'; \
+    echo 'sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(error_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'chown vmail:vmail /mailbox'; \
@@ -198,6 +203,7 @@ ENV AUTH_PASSWORD password1,password2
 
 ENV DISABLE_SMTP_AUTH_ON_PORT_25 true
 ENV BOUNCE_MESSAGE true
+ENV NOTICE_RECIPIENT user1
 
 # SMTP
 EXPOSE 25
