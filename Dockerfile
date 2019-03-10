@@ -172,6 +172,8 @@ RUN { \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'chown vmail:vmail /mailbox'; \
+    echo 'sed -i "s/^\(bounce_notice_recipient =\).*/\1/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(error_notice_recipient =\).*/\1/" /etc/postfix/main.cf'; \
     echo 'if [ -n "${NOTICE_RECIPIENT}" ]; then'; \
     echo '  sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^\(error_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
