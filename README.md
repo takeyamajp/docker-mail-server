@@ -19,7 +19,8 @@
     ENV AUTH_PASSWORD password1,password2
     
     ENV DISABLE_SMTP_AUTH_ON_PORT_25 true  
-    ENV BOUNCE_MESSAGE true
+    ENV BOUNCE_MESSAGE true  
+    ENV NOTICE_RECIPIENT user1
     
     # SMTP  
     EXPOSE 25  
