@@ -178,11 +178,11 @@ RUN { \
     echo 'sed -i "s/^\(error_notice_recipient =\).*/\1/" /etc/postfix/main.cf'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
     echo '  if [ ${INDEX} -gt 0 ]; then'; \
-    echo '    sed -i "s/^\(bounce_notice_recipient =\).*/\1,/" /etc/postfix/main.cf'; \
-    echo '    sed -i "s/^\(error_notice_recipient =\).*/\1,/" /etc/postfix/main.cf'; \
+    echo '    sed -i "s/^\(bounce_notice_recipient =.*\)/\1,/" /etc/postfix/main.cf'; \
+    echo '    sed -i "s/^\(error_notice_recipient =.*\)/\1,/" /etc/postfix/main.cf'; \
     echo '  fi'; \
-    echo '  sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^\(error_notice_recipient =\).*/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(bounce_notice_recipient =.*\)/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(error_notice_recipient =.*\)/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
     echo '  ((INDEX+=1))'; \
     echo 'done'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
