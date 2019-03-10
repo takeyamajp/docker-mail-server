@@ -172,19 +172,10 @@ RUN { \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'chown vmail:vmail /mailbox'; \
-    echo 'ARRAY_USER=(`echo ${NOTICE_RECIPIENT} | tr "," " "`)'; \
-    echo 'INDEX=0'; \
-    echo 'sed -i "s/^\(bounce_notice_recipient =\).*/\1/" /etc/postfix/main.cf'; \
-    echo 'sed -i "s/^\(error_notice_recipient =\).*/\1/" /etc/postfix/main.cf'; \
-    echo 'for e in ${ARRAY_USER[@]}; do'; \
-    echo '  if [ ${INDEX} -gt 0 ]; then'; \
-    echo '    sed -i "s/^\(bounce_notice_recipient =.*\)/\1,/" /etc/postfix/main.cf'; \
-    echo '    sed -i "s/^\(error_notice_recipient =.*\)/\1,/" /etc/postfix/main.cf'; \
-    echo '  fi'; \
-    echo '  sed -i "s/^\(bounce_notice_recipient =.*\)/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^\(error_notice_recipient =.*\)/\1 ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
-    echo '  ((INDEX+=1))'; \
-    echo 'done'; \
+    echo 'if [ -n "${NOTICE_RECIPIENT}" ]; then'; \
+    echo '  sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+	echo '  sed -i "s/^\(error_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+    echo 'fi'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
