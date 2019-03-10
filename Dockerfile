@@ -169,11 +169,11 @@ RUN { \
     echo 'if [ ${BOUNCE_MESSAGE,,} != "true" ]; then'; \
     echo '  echo "@${DOMAIN_NAME} unknown@localhost" >> /etc/postfix/virtual'; \
     echo 'fi'; \
-    echo 'sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
-    echo 'sed -i "s/^\(error_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
     echo 'postmap /etc/postfix/vmailbox'; \
     echo 'postmap /etc/postfix/virtual'; \
     echo 'chown vmail:vmail /mailbox'; \
+    echo 'sed -i "s/^\(bounce_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(error_notice_recipient =\).*/\1 ${NOTICE_RECIPIENT}@${DOMAIN_NAME}/" /etc/postfix/main.cf'; \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
