@@ -186,6 +186,8 @@ RUN { \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
     echo 'echo "virtual_mailbox_limit = ${MAILBOX_SIZE_LIMIT}"'; \
     echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
+    echo 'echo "anvil_rate_time_unit = ${ANVIL_RATE_TIME_UNIT}"'; \
+    echo 'echo "smtpd_client_connection_rate_limit = ${SMTPD_CLIENT_CONNECTION_RATE_LIMIT}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
     echo 'exec "$@"'; \
@@ -207,6 +209,9 @@ ENV AUTH_PASSWORD password1,password2
 ENV DISABLE_SMTP_AUTH_ON_PORT_25 true
 ENV BOUNCE_MESSAGE true
 ENV NOTICE_RECIPIENT user1
+
+ENV ANVIL_RATE_TIME_UNIT 60s
+ENV SMTPD_CLIENT_CONNECTION_RATE_LIMIT 0
 
 # SMTP
 EXPOSE 25
