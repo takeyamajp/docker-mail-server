@@ -22,6 +22,9 @@
     ENV BOUNCE_MESSAGE true  
     ENV NOTICE_RECIPIENT user1
     
+    ENV ANVIL_RATE_TIME_UNIT 60s  
+    ENV SMTPD_CLIENT_CONNECTION_RATE_LIMIT 0
+    
     # SMTP  
     EXPOSE 25  
     # Submission  
