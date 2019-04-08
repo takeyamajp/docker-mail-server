@@ -26,9 +26,12 @@ RUN yum -y install epel-release; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
     echo 'disable_vrfy_command = yes'; \
     echo 'smtpd_helo_required = yes'; \
-    echo 'smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_hostname, reject_non_fqdn_hostname, reject_unknown_hostname'; \
-    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
+    echo 'smtpd_delay_reject = no'; \
+    echo 'smtpd_client_restrictions = permit_mynetworks, reject_unknown_client_hostname'; \
+    echo 'smtpd_helo_restrictions = permit_mynetworks, reject_invalid_hostname, reject_non_fqdn_hostname, reject_unknown_hostname'; \
     echo 'smtpd_sender_restrictions = reject_non_fqdn_sender, reject_unknown_sender_domain'; \
+    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
+    echo 'smtpd_data_restrictions = reject_unauth_pipelining'; \
     echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
     echo 'smtpd_tls_key_file = /cert/key.pem'; \
     echo 'smtpd_tls_security_level = may'; \
