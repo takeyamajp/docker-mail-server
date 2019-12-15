@@ -3,6 +3,10 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/takeyamajp/mail-server.svg)](https://hub.docker.com/r/takeyamajp/mail-server/)
 [![license](https://img.shields.io/github/license/takeyamajp/docker-mail-server.svg)](https://github.com/takeyamajp/docker-mail-server/blob/master/LICENSE)
 
+### Supported tags and respective Dockerfile links  
+- [`latest`, `centos7`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos7/Dockerfile)
+
+### Image summary
     FROM centos:centos7  
     MAINTAINER "Hiroki Takeyama"
     
