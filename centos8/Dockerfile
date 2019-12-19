@@ -70,7 +70,7 @@ RUN dnf -y install wget python36; \
     cp /pypolicyd-spf-2.0.2/build/lib/policydspfsupp.py /usr/lib/python3.6/policydspfsupp.py; \
     mkdir /etc/python-policyd-spf; \
     cp /pypolicyd-spf-2.0.2/policyd-spf.conf /etc/python-policyd-spf/policyd-spf.conf; \
-    sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
+    sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf;
 
 # dovecot
 RUN dnf -y install dovecot; \
