@@ -20,7 +20,7 @@ RUN dnf -y install wget python36; \
     tar -xzf /usr/src/pypolicyd-spf-2.0.2.tar.gz -C /; \
     rm -f /usr/src/pypolicyd-spf-2.0.2.tar.gz; \
     cd /pypolicyd-spf-2.0.2; \
-    python3 setup.py build; \
+    python3 ./setup.py build; \
     cp /pypolicyd-spf-2.0.2/build/scripts-3.6/policyd-spf /usr/local/bin/policyd-spf; \
     cp /pypolicyd-spf-2.0.2/build/lib/policydspfsupp.py /usr/lib/python3.6/policydspfsupp.py; \
     mkdir /etc/python-policyd-spf; \
