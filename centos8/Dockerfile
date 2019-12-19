@@ -15,8 +15,7 @@ RUN mkdir /mailbox; \
     useradd -u 5000 -g vmail -s /sbin/nologin vmail;
 
 # postfix
-RUN dnf -y install epel-release; \
-    dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
+RUN dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_cert_file =\) .*/\1 \/cert\/cert.pem/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_key_file =\) .*/\1 \/cert\/key.pem/' /etc/postfix/main.cf; \
@@ -105,6 +104,7 @@ RUN dnf -y install rsyslog; \
 
 # supervisor
 RUN mkdir /run/supervisor; \
+    dnf -y install epel-release; \
     dnf -y install supervisor; \
     sed -i 's/^\(nodaemon\)=false/\1=true/' /etc/supervisord.conf; \
     sed -i 's/^;\(user\)=chrism/\1=root/' /etc/supervisord.conf; \
