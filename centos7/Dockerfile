@@ -4,7 +4,7 @@ MAINTAINER "Hiroki Takeyama"
 # certificate
 RUN mkdir /cert; \
     yum -y install openssl; \
-    openssl genrsa -aes128 -passout pass:dummy -out "/cert/key.pass.pem" 2048; \
+    openssl genrsa -aes256 -passout pass:dummy -out "/cert/key.pass.pem" 2048; \
     openssl rsa -passin pass:dummy -in "/cert/key.pass.pem" -out "/cert/key.pem"; \
     rm -f /cert/key.pass.pem; \
     yum clean all;
@@ -133,7 +133,7 @@ RUN { \
     echo '  CN=`openssl x509 -in /cert/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.]\+\)$/\1/"`'; \
     echo 'fi'; \
     echo 'if [ ! -e /cert/cert.pem ] || [ -e /cert/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
-    echo '  openssl req -new -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
+    echo '  openssl req -new -sha384 -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'sed -i "s/^\(smtpd_tls_cert_file =\).*/\1 \/cert\/cert.pem/" /etc/postfix/main.cf'; \
