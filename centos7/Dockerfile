@@ -124,7 +124,6 @@ RUN yum -y install supervisor; \
 # entrypoint
 RUN { \
     echo '#!/bin/bash -eu'; \
-    echo 'rm -f /etc/localtime'; \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
