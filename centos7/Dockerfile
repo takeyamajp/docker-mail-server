@@ -103,19 +103,23 @@ RUN yum -y install supervisor; \
     { \
     echo '[program:postfix]'; \
     echo 'command=/usr/sbin/postfix -c /etc/postfix start'; \
+    echo 'priority=4'; \
     echo 'startsecs=0'; \
     } > /etc/supervisord.d/postfix.ini; \
     { \
     echo '[program:dovecot]'; \
     echo 'command=/usr/sbin/dovecot -F'; \
+    echo 'priority=3'; \
     } > /etc/supervisord.d/dovecot.ini; \
     { \
     echo '[program:rsyslog]'; \
     echo 'command=/usr/sbin/rsyslogd -n'; \
+    echo 'priority=2'; \
     } > /etc/supervisord.d/rsyslog.ini; \
     { \
     echo '[program:tail]'; \
     echo 'command=/usr/bin/tail -F /var/log/maillog'; \
+    echo 'priority=1'; \
     echo 'stdout_logfile=/dev/fd/1'; \
     echo 'stdout_logfile_maxbytes=0'; \
     } > /etc/supervisord.d/tail.ini; \
