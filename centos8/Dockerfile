@@ -210,7 +210,6 @@ RUN { \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
     chmod +x /usr/local/bin/entrypoint.sh;
-ENTRYPOINT ["entrypoint.sh"]
 
 ENV TIMEZONE Asia/Tokyo
 
@@ -249,4 +248,5 @@ EXPOSE 993
 
 VOLUME /mailbox
 
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
