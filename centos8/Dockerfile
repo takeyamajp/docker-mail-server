@@ -93,7 +93,6 @@ RUN dnf -y install rsyslog; \
 
 # supervisor
 RUN mkdir /run/supervisor; \
-    dnf -y install epel-release; \
     dnf -y install supervisor; \
     sed -i 's/^\(nodaemon\)=false/\1=true/' /etc/supervisord.conf; \
     sed -i 's/^;\(user\)=chrism/\1=root/' /etc/supervisord.conf; \
