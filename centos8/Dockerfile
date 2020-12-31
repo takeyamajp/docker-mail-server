@@ -15,7 +15,8 @@ RUN mkdir /mailbox; \
     useradd -u 5000 -g vmail -s /sbin/nologin vmail;
 
 # postfix
-RUN dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
+RUN dnf -y install epel-release; \
+    dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5 pypolicyd-spf; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_cert_file =\) .*/\1 \/cert\/cert.pem/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_key_file =\) .*/\1 \/cert\/key.pem/' /etc/postfix/main.cf; \
@@ -53,23 +54,10 @@ RUN dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^#\(.* smtpd_sasl_auth_enable=.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_recipient_restrictions=.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_tls_wrappermode=.*\)/\1/' /etc/postfix/master.cf; \
-    echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/local/bin/policyd-spf' >> /etc/postfix/master.cf; \
+    echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
+    sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
-    dnf clean all;
-
-# pypolicyd-spf
-RUN dnf -y install wget python36; \
-    wget https://launchpad.net/pypolicyd-spf/2.0/2.0.2/+download/pypolicyd-spf-2.0.2.tar.gz -P /usr/src; \
-    tar -xzf /usr/src/pypolicyd-spf-2.0.2.tar.gz -C /; \
-    rm -f /usr/src/pypolicyd-spf-2.0.2.tar.gz; \
-    cd /pypolicyd-spf-2.0.2; \
-    python3 ./setup.py build; \
-    cp /pypolicyd-spf-2.0.2/build/scripts-3.6/policyd-spf /usr/local/bin/policyd-spf; \
-    cp /pypolicyd-spf-2.0.2/build/lib/policydspfsupp.py /usr/lib/python3.6/policydspfsupp.py; \
-    mkdir /etc/python-policyd-spf; \
-    cp /pypolicyd-spf-2.0.2/policyd-spf.conf /etc/python-policyd-spf/policyd-spf.conf; \
-    sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
     dnf clean all;
 
 # dovecot
