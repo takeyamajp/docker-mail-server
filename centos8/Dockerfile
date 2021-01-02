@@ -131,7 +131,7 @@ RUN { \
     echo 'touch /var/log/maillog'; \
     echo 'CN=;'; \
     echo 'if [ -e /cert/cert.pem ]; then'; \
-    echo '  CN=`openssl x509 -in /cert/cert.pem -noout -subject | sed -e "s/^.*=\([a-zA-Z0-9\.-]\+\)$/\1/"`'; \
+    echo '  CN=`openssl x509 -in /cert/cert.pem -noout -subject | sed -e "s/^.*= *\([a-zA-Z0-9\.-]\+\)$/\1/"`'; \
     echo 'fi'; \
     echo 'if [ ! -e /cert/cert.pem ] || [ -e /cert/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
     echo '  openssl req -new -sha384 -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
