@@ -246,7 +246,7 @@ RUN { \
     echo 'fi'; \
     echo 'if [ ${ENABLE_DMARC,,} = "true" ]; then'; \
     echo '  mv /etc/supervisord.d/opendmarc.disabled /etc/supervisord.d/opendmarc.ini'; \
-	echo '  sed -i "s/^\(smtpd_milters .*\)/\1,inet:localhost:8893/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_milters .*\)/\1,inet:localhost:8893/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8893/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#* *\(TrustedAuthservIDs\) .*/\1 ${HOST_NAME}/" /etc/opendmarc.conf'; \
