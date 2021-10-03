@@ -16,7 +16,7 @@ RUN mkdir /mailbox; \
 
 # postfix
 RUN yum -y install epel-release; \
-    yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5 pypolicyd-spf; \
+    yum -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
@@ -30,7 +30,7 @@ RUN yum -y install epel-release; \
     echo 'smtpd_client_restrictions = permit_mynetworks, reject_unknown_client_hostname'; \
     echo 'smtpd_helo_restrictions = permit_mynetworks, reject_invalid_hostname, reject_non_fqdn_hostname, reject_unknown_hostname'; \
     echo 'smtpd_sender_restrictions = reject_non_fqdn_sender, reject_unknown_sender_domain'; \
-    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination, check_policy_service unix:private/policyd-spf'; \
+    echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
     echo 'smtpd_data_restrictions = reject_unauth_pipelining'; \
     echo 'smtpd_tls_cert_file = /cert/cert.pem'; \
     echo 'smtpd_tls_key_file = /cert/key.pem'; \
@@ -54,8 +54,6 @@ RUN yum -y install epel-release; \
     sed -i 's/^#\(.* smtpd_sasl_auth_enable=.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_recipient_restrictions=.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_tls_wrappermode=.*\)/\1/' /etc/postfix/master.cf; \
-    echo 'policyd-spf unix - n n - - spawn user=nobody argv=/usr/libexec/postfix/policyd-spf' >> /etc/postfix/master.cf; \
-    sed -i 's/^\(HELO_reject =\).*/\1 SPF_Not_Pass/' /etc/python-policyd-spf/policyd-spf.conf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
     yum clean all;
@@ -63,8 +61,8 @@ RUN yum -y install epel-release; \
 # dovecot
 RUN yum -y install dovecot; \
     sed -i '/^service auth {$/a unix_listener /var/spool/postfix/private/auth {\nmode = 0660\nuser = postfix\ngroup = postfix\n}' /etc/dovecot/conf.d/10-master.conf; \
-    echo 'mail_location = maildir:~/' >> /etc/dovecot/conf.d/10-mail.conf; \
-    echo 'disable_plaintext_auth = no' >> /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^#\(mail_location =\).*/\1 maildir:~\//' /etc/dovecot/conf.d/10-mail.conf; \
+    sed -i 's/^#\(disable_plaintext_auth =\).*/\1 no/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(auth_mechanisms =\).*/\1 plain login digest-md5 cram-md5/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(!include auth-system.conf.ext\)/#\1/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^#\(!include auth-passwdfile.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
@@ -86,6 +84,26 @@ RUN yum -y install dovecot; \
     sed -i 's/^\(ssl_key = <\).*/\1\/cert\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
     yum clean all;
 
+# opendkim
+RUN mkdir /keys; \
+    yum -y install opendkim; \
+    sed -i 's/^\(Mode\t\).*/\1sv/' /etc/opendkim.conf; \
+    sed -i 's/^\(SoftwareHeader\t\).*/\1no/' /etc/opendkim.conf; \
+    sed -i 's/^# *\(Domain\t.*\)/\1/' /etc/opendkim.conf; \
+    echo 'smtpd_milters = inet:localhost:8891' >> /etc/postfix/main.cf; \
+    echo 'non_smtpd_milters = $smtpd_milters' >> /etc/postfix/main.cf; \
+    echo 'milter_default_action = accept' >> /etc/postfix/main.cf; \
+    yum clean all;
+
+# opendmarc
+RUN yum -y install opendmarc; \
+    sed -i 's/^# *\(AuthservID\) .*/\1 OpenDMARC/' /etc/opendmarc.conf; \
+    sed -i 's/^# *\(IgnoreAuthenticatedClients\) .*/\1 true/' /etc/opendmarc.conf; \
+    sed -i 's/^# *\(RejectFailures\) .*/\1 true/' /etc/opendmarc.conf; \
+    sed -i 's/^# *\(RequiredHeaders\) .*/\1 true/' /etc/opendmarc.conf; \
+    sed -i 's/^\(smtpd_milters = .*\)/\1,inet:localhost:8893/' /etc/postfix/main.cf; \
+    yum clean all;
+
 # rsyslog
 RUN yum -y install rsyslog; \
     sed -i 's/^\(\$SystemLogSocketName\) .*/\1 \/dev\/log/' /etc/rsyslog.d/listen.conf; \
@@ -103,9 +121,19 @@ RUN yum -y install supervisor; \
     { \
     echo '[program:postfix]'; \
     echo 'command=/usr/sbin/postfix -c /etc/postfix start'; \
-    echo 'priority=4'; \
+    echo 'priority=6'; \
     echo 'startsecs=0'; \
     } > /etc/supervisord.d/postfix.ini; \
+    { \
+    echo '[program:opendmarc]'; \
+    echo 'command=/usr/sbin/opendmarc -f -c /etc/opendmarc.conf'; \
+    echo 'priority=5'; \
+    } > /etc/supervisord.d/opendmarc.ini; \
+    { \
+    echo '[program:opendkim]'; \
+    echo 'command=/usr/sbin/opendkim -f -x /etc/opendkim.conf'; \
+    echo 'priority=4'; \
+    } > /etc/supervisord.d/opendkim.ini; \
     { \
     echo '[program:dovecot]'; \
     echo 'command=/usr/sbin/dovecot -F'; \
@@ -196,6 +224,35 @@ RUN { \
     echo 'echo "smtpd_client_connection_rate_limit = ${SMTPD_CLIENT_CONNECTION_RATE_LIMIT}"'; \
     echo 'echo "# END SMTP SETTINGS"'; \
     echo '} >> /etc/postfix/main.cf'; \
+    echo 'if [ -e /etc/supervisord.d/opendkim.ini ]; then'; \
+    echo '  mv /etc/supervisord.d/opendkim.ini /etc/supervisord.d/opendkim.disabled'; \
+    echo 'fi'; \
+    echo 'sed -i "s/^\(smtpd_milters .*\)/#\1/" /etc/postfix/main.cf'; \
+    echo 'sed -i "s/^\(non_smtpd_milters .*\)/#\1/" /etc/postfix/main.cf'; \
+    echo 'if [ ${ENABLE_DKIM,,} = "true" ]; then'; \
+    echo '  mv /etc/supervisord.d/opendkim.disabled /etc/supervisord.d/opendkim.ini'; \
+    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8891/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(Domain\t\).*/\1${DOMAIN_NAME}/" /etc/opendkim.conf'; \
+    echo '  sed -i "s/^\(Selector\t\).*/\1${DKIM_SELECTOR}/" /etc/opendkim.conf'; \
+    echo '  sed -i "s/^\(KeyFile\t\).*/\1\/keys\/${DKIM_SELECTOR}\.private/" /etc/opendkim.conf'; \
+    echo '  if [ ! -e /keys/${DKIM_SELECTOR}.private ] || [ ! -e /keys/${DKIM_SELECTOR}.txt ]; then'; \
+    echo '    opendkim-genkey -b ${DKIM_KEY_LENGTH} -d ${DOMAIN_NAME} -s ${DKIM_SELECTOR} -D /keys'; \
+    echo '  fi'; \
+    echo '  chown -R opendkim:opendkim /keys'; \
+    echo '  chmod o-rwx /keys/${DKIM_SELECTOR}.private'; \
+    echo '  cat /keys/${DKIM_SELECTOR}.txt'; \
+    echo 'fi'; \
+    echo 'if [ -e /etc/supervisord.d/opendmarc.ini ]; then'; \
+    echo '  mv /etc/supervisord.d/opendmarc.ini /etc/supervisord.d/opendmarc.disabled'; \
+    echo 'fi'; \
+    echo 'if [ ${ENABLE_DMARC,,} = "true" ]; then'; \
+    echo '  mv /etc/supervisord.d/opendmarc.disabled /etc/supervisord.d/opendmarc.ini'; \
+	echo '  sed -i "s/^\(smtpd_milters .*\)/\1,inet:localhost:8893/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8893/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#* *\(TrustedAuthservIDs\) .*/\1 ${HOST_NAME}/" /etc/opendmarc.conf'; \
+    echo 'fi'; \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
     chmod +x /usr/local/bin/entrypoint.sh;
@@ -218,6 +275,12 @@ ENV NOTICE_RECIPIENT user1
 ENV ANVIL_RATE_TIME_UNIT 60s
 ENV SMTPD_CLIENT_CONNECTION_RATE_LIMIT 0
 
+ENV ENABLE_DKIM true
+ENV DKIM_KEY_LENGTH 1024
+ENV DKIM_SELECTOR default
+
+ENV ENABLE_DMARC true
+
 # SMTP
 EXPOSE 25
 # Submission
@@ -236,6 +299,9 @@ EXPOSE 995
 EXPOSE 993
 
 VOLUME /mailbox
+
+# DKIM
+VOLUME /keys
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
