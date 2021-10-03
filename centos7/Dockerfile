@@ -298,8 +298,8 @@ EXPOSE 995
 # IMAPS
 EXPOSE 993
 
+# MailBox
 VOLUME /mailbox
-
 # DKIM
 VOLUME /keys
 
