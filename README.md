@@ -5,12 +5,12 @@ Star this repository if it is useful for you.
 [![license](https://img.shields.io/github/license/takeyamajp/docker-mail-server.svg)](https://github.com/takeyamajp/docker-mail-server/blob/master/LICENSE)
 
 ### Supported tags and respective Dockerfile links  
-- `rocky8` (Rocky Linux 8.3)
-- [`latest`, `centos8`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos8/Dockerfile) (We'll finish support of CentOS8 in 31 December 2021.)
+- [`latest`, `rocky8`](https://github.com/takeyamajp/docker-mail-server/blob/master/rocky8/Dockerfile) (Rocky Linux)
+- [`centos8`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos8/Dockerfile) (We'll finish support of CentOS8 in 31 December 2021.)
 - [`centos7`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos7/Dockerfile)
 
 ### Image summary
-    FROM centos:centos8  
+    FROM rockylinux/rockylinux:8  
     MAINTAINER "Hiroki Takeyama"
     
     ENV TIMEZONE Asia/Tokyo
@@ -31,6 +31,12 @@ Star this repository if it is useful for you.
     ENV ANVIL_RATE_TIME_UNIT 60s  
     ENV SMTPD_CLIENT_CONNECTION_RATE_LIMIT 0
     
+    ENV ENABLE_DKIM true  
+    ENV DKIM_KEY_LENGTH 1024  
+    ENV DKIM_SELECTOR default
+    
+    ENV ENABLE_DMARC true  
+    
     # SMTP  
     EXPOSE 25  
     # Submission  
@@ -48,4 +54,7 @@ Star this repository if it is useful for you.
     # IMAPS  
     EXPOSE 993
     
+    # MailBox  
     VOLUME /mailbox
+    # DKIM  
+    VOLUME /keys
