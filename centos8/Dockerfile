@@ -28,9 +28,8 @@ RUN dnf -y install epel-release; \
     echo 'smtpd_sasl_security_options = noanonymous'; \
     echo 'disable_vrfy_command = yes'; \
     echo 'smtpd_helo_required = yes'; \
-    echo 'smtpd_delay_reject = no'; \
-    echo 'smtpd_client_restrictions = permit_mynetworks, reject_unknown_client_hostname'; \
-    echo 'smtpd_helo_restrictions = permit_mynetworks, reject_invalid_hostname, reject_non_fqdn_hostname, reject_unknown_hostname'; \
+    echo 'smtpd_client_restrictions = permit_sasl_authenticated, reject_unknown_client_hostname'; \
+    echo 'smtpd_helo_restrictions = permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'; \
     echo 'smtpd_sender_restrictions = reject_non_fqdn_sender, reject_unknown_sender_domain'; \
     echo 'smtpd_recipient_restrictions = permit_sasl_authenticated, reject_unauth_destination'; \
     echo 'smtpd_data_restrictions = reject_unauth_pipelining'; \
@@ -214,7 +213,7 @@ RUN { \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
     echo 'echo "myhostname = ${HOST_NAME}"'; \
     echo 'echo "mydomain = ${DOMAIN_NAME}"'; \
-    echo 'echo "smtpd_banner = \$myhostname ESMTP unknown"'; \
+    echo 'echo "smtpd_banner = \$myhostname ESMTP"'; \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
     echo 'echo "virtual_mailbox_limit = ${MAILBOX_SIZE_LIMIT}"'; \
     echo 'echo "message_size_limit = ${MESSAGE_SIZE_LIMIT}"'; \
