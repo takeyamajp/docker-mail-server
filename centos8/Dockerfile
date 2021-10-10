@@ -62,14 +62,14 @@ RUN dnf -y install dovecot; \
     sed -i '/^service auth {$/a unix_listener /var/spool/postfix/private/auth {\nmode = 0660\nuser = postfix\ngroup = postfix\n}' /etc/dovecot/conf.d/10-master.conf; \
     sed -i 's/^#\(mail_location =\).*/\1 maildir:~\//' /etc/dovecot/conf.d/10-mail.conf; \
     sed -i 's/^#\(disable_plaintext_auth =\).*/\1 no/' /etc/dovecot/conf.d/10-auth.conf; \
-    sed -i 's/^\(auth_mechanisms =\).*/\1 plain login digest-md5 cram-md5/' /etc/dovecot/conf.d/10-auth.conf; \
+    sed -i 's/^\(auth_mechanisms =\).*/\1 plain login cram-md5/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^\(!include auth-system.conf.ext\)/#\1/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^#\(!include auth-passwdfile.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
     sed -i 's/^#\(!include auth-static.conf.ext\)/\1/' /etc/dovecot/conf.d/10-auth.conf; \
     { \
     echo 'passdb {'; \
     echo '  driver = passwd-file'; \
-    echo '  args = scheme=CRAM-MD5 username_format=%u /etc/dovecot/users'; \
+    echo '  args = username_format=%u /etc/dovecot/users'; \
     echo '}'; \
     } > /etc/dovecot/conf.d/auth-passwdfile.conf.ext; \
     { \
@@ -187,7 +187,7 @@ RUN { \
     echo 'ARRAY_PASSWORD=(`echo ${AUTH_PASSWORD} | tr "," " "`)'; \
     echo 'INDEX=0'; \
     echo 'for e in ${ARRAY_USER[@]}; do'; \
-    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:`doveadm pw -p ${ARRAY_PASSWORD[${INDEX}]}`" >> /etc/dovecot/users'; \
+    echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}:`doveadm pw -s CRAM-MD5 -p ${ARRAY_PASSWORD[${INDEX}]}`" >> /etc/dovecot/users'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}/" >> /etc/postfix/vmailbox'; \
     echo '  echo "${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME} ${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}" >> /etc/postfix/virtual'; \
     echo '  mkdir -p /mailbox/${ARRAY_USER[${INDEX}]}@${DOMAIN_NAME}'; \
