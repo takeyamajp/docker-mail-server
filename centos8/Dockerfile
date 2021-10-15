@@ -1,12 +1,9 @@
 FROM centos:centos8
 MAINTAINER "Hiroki Takeyama"
 
-# certificate
-RUN mkdir /cert; \
+# openssl
+RUN mkdir /ssl_certs; \
     dnf -y install openssl; \
-    openssl genrsa -aes256 -passout pass:dummy -out "/cert/key.pass.pem" 2048; \
-    openssl rsa -passin pass:dummy -in "/cert/key.pass.pem" -out "/cert/key.pem"; \
-    rm -f /cert/key.pass.pem; \
     dnf clean all;
 
 # mailbox
@@ -18,8 +15,8 @@ RUN mkdir /mailbox; \
 RUN dnf -y install epel-release; \
     dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
-    sed -i 's/^\(smtpd_tls_cert_file =\) .*/\1 \/cert\/cert.pem/' /etc/postfix/main.cf; \
-    sed -i 's/^\(smtpd_tls_key_file =\) .*/\1 \/cert\/key.pem/' /etc/postfix/main.cf; \
+    sed -i 's/^\(smtpd_tls_cert_file =\) .*/\1 \/ssl_certs\/cert.pem/' /etc/postfix/main.cf; \
+    sed -i 's/^\(smtpd_tls_key_file =\) .*/\1 \/ssl_certs\/key.pem/' /etc/postfix/main.cf; \
     { \
     echo 'smtpd_sasl_type = dovecot'; \
     echo 'smtpd_sasl_path = private/auth'; \
@@ -36,6 +33,7 @@ RUN dnf -y install epel-release; \
     echo 'smtpd_tls_security_level = may'; \
     echo 'smtpd_tls_received_header = yes'; \
     echo 'smtpd_tls_loglevel = 1'; \
+    echo 'smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache'; \
     echo 'smtp_tls_security_level = may'; \
     echo 'smtp_tls_loglevel = 1'; \
     echo 'smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache'; \
@@ -51,7 +49,7 @@ RUN dnf -y install epel-release; \
     sed -i 's/^#\(smtps .*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* syslog_name=.*\)/\1/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_sasl_auth_enable=.*\)/\1/' /etc/postfix/master.cf; \
-    sed -i 's/^#\(.* smtpd_recipient_restrictions=.*\)/\1/' /etc/postfix/master.cf; \
+    sed -i 's/^#\(.* smtpd_recipient_restrictions=\).*/\1permit_sasl_authenticated,reject/' /etc/postfix/master.cf; \
     sed -i 's/^#\(.* smtpd_tls_wrappermode=.*\)/\1/' /etc/postfix/master.cf; \
     echo 'unknown: /dev/null' >> /etc/aliases; \
     newaliases; \
@@ -79,12 +77,12 @@ RUN dnf -y install dovecot; \
     echo '}'; \
     } > /etc/dovecot/conf.d/auth-static.conf.ext; \
     sed -i 's/^\(ssl =\).*/\1 yes/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_cert = <\).*/\1\/cert\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
-    sed -i 's/^\(ssl_key = <\).*/\1\/cert\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_cert = <\).*/\1\/ssl_certs\/cert.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
+    sed -i 's/^\(ssl_key = <\).*/\1\/ssl_certs\/key.pem/' /etc/dovecot/conf.d/10-ssl.conf; \
     dnf clean all;
 
 # opendkim
-RUN mkdir /keys; \
+RUN mkdir /dkim_keys; \
     dnf -y install opendkim glibc-locale-source; \
     sed -i 's/^\(Mode\t\).*/\1sv/' /etc/opendkim.conf; \
     sed -i 's/^\(SoftwareHeader\t\).*/\1no/' /etc/opendkim.conf; \
@@ -156,23 +154,12 @@ RUN { \
     echo 'ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime'; \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
-    echo 'CN=;'; \
-    echo 'if [ -e /cert/cert.pem ]; then'; \
-    echo '  CN=`openssl x509 -in /cert/cert.pem -noout -subject | sed -e "s/^.*= *\([a-zA-Z0-9\.-]\+\)$/\1/"`'; \
-    echo 'fi'; \
-    echo 'if [ ! -e /cert/cert.pem ] || [ -e /cert/cert.pem ] && [ "${CN}" != "${HOST_NAME}" ]; then'; \
-    echo '  openssl req -new -sha384 -key "/cert/key.pem" -subj "/CN=${HOST_NAME}" -out "/cert/csr.pem"'; \
-    echo '  openssl x509 -req -days 36500 -in "/cert/csr.pem" -signkey "/cert/key.pem" -out "/cert/cert.pem" &>/dev/null'; \
-    echo 'fi'; \
-    echo 'sed -i "s/^\(smtpd_tls_cert_file =\).*/\1 \/cert\/cert.pem/" /etc/postfix/main.cf'; \
-    echo 'sed -i "s/^\(smtpd_tls_key_file =\).*/\1 \/cert\/key.pem/" /etc/postfix/main.cf'; \
-    echo 'sed -i "s/^\(ssl_cert = <\).*/\1\/cert\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
-    echo 'sed -i "s/^\(ssl_key = <\).*/\1\/cert\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
-    echo 'if [ -e /mailbox/cert.pem ] && [ -e /mailbox/key.pem ]; then'; \
-    echo '  sed -i "s/^\(smtpd_tls_cert_file =\).*/\1 \/mailbox\/cert.pem/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^\(smtpd_tls_key_file =\).*/\1 \/mailbox\/key.pem/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^\(ssl_cert = <\).*/\1\/mailbox\/cert.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
-    echo '  sed -i "s/^\(ssl_key = <\).*/\1\/mailbox\/key.pem/" /etc/dovecot/conf.d/10-ssl.conf'; \
+    echo 'if [ ! -e /ssl_certs/cert.pem ] || [ ! -e /ssl_certs/key.pem ]; then'; \
+    echo '  openssl genrsa -aes256 -passout pass:dummy -out "/ssl_certs/key.pass.pem" 2048 &>/dev/null'; \
+    echo '  openssl rsa -passin pass:dummy -in "/ssl_certs/key.pass.pem" -out "/ssl_certs/key.pem" &>/dev/null'; \
+    echo '  rm -f /ssl_certs/key.pass.pem'; \
+    echo '  openssl req -new -sha384 -key "/ssl_certs/key.pem" -subj "/CN=${HOST_NAME}" -out "/ssl_certs/csr.pem"'; \
+    echo '  openssl x509 -req -days 36500 -in "/ssl_certs/csr.pem" -signkey "/ssl_certs/key.pem" -out "/ssl_certs/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 yes/" /etc/postfix/main.cf'; \
     echo 'if [ ${DISABLE_SMTP_AUTH_ON_PORT_25,,} = "true" ]; then'; \
@@ -232,13 +219,13 @@ RUN { \
     echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^\(Domain\t\).*/\1${DOMAIN_NAME}/" /etc/opendkim.conf'; \
     echo '  sed -i "s/^\(Selector\t\).*/\1${DKIM_SELECTOR}/" /etc/opendkim.conf'; \
-    echo '  sed -i "s/^\(KeyFile\t\).*/\1\/keys\/${DKIM_SELECTOR}\.private/" /etc/opendkim.conf'; \
-    echo '  if [ ! -e /keys/${DKIM_SELECTOR}.private ] || [ ! -e /keys/${DKIM_SELECTOR}.txt ]; then'; \
-    echo '    opendkim-genkey -b ${DKIM_KEY_LENGTH} -d ${DOMAIN_NAME} -s ${DKIM_SELECTOR} -D /keys'; \
+    echo '  sed -i "s/^\(KeyFile\t\).*/\1\/dkim_keys\/${DKIM_SELECTOR}\.private/" /etc/opendkim.conf'; \
+    echo '  if [ ! -e /dkim_keys/${DKIM_SELECTOR}.private ] || [ ! -e /dkim_keys/${DKIM_SELECTOR}.txt ]; then'; \
+    echo '    opendkim-genkey -b ${DKIM_KEY_LENGTH} -d ${DOMAIN_NAME} -s ${DKIM_SELECTOR} -D /dkim_keys'; \
     echo '  fi'; \
-    echo '  chown -R opendkim:opendkim /keys'; \
-    echo '  chmod o-rwx /keys/${DKIM_SELECTOR}.private'; \
-    echo '  cat /keys/${DKIM_SELECTOR}.txt'; \
+    echo '  chown -R opendkim:opendkim /dkim_keys'; \
+    echo '  chmod o-rwx /dkim_keys/${DKIM_SELECTOR}.private'; \
+    echo '  cat /dkim_keys/${DKIM_SELECTOR}.txt'; \
     echo 'fi'; \
     echo 'if [ -e /etc/supervisord.d/opendmarc.ini ]; then'; \
     echo '  mv /etc/supervisord.d/opendmarc.ini /etc/supervisord.d/opendmarc.disabled'; \
@@ -278,6 +265,13 @@ ENV DKIM_SELECTOR default
 
 ENV ENABLE_DMARC true
 
+# MailBox
+VOLUME /mailbox
+# SSL Certificates
+VOLUME /ssl_certs
+# DKIM Keys
+VOLUME /dkim_keys
+
 # SMTP
 EXPOSE 25
 # Submission
@@ -294,11 +288,6 @@ EXPOSE 143
 EXPOSE 995
 # IMAPS
 EXPOSE 993
-
-# MailBox
-VOLUME /mailbox
-# DKIM
-VOLUME /keys
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
