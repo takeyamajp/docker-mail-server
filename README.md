@@ -37,6 +37,13 @@ Star this repository if it is useful for you.
     
     ENV ENABLE_DMARC true  
     
+    # MailBox  
+    VOLUME /mailbox
+    # SSL Certificates  
+    VOLUME /ssl_certs
+    # DKIM Keys  
+    VOLUME /dkim_keys
+    
     # SMTP  
     EXPOSE 25  
     # Submission  
@@ -53,8 +60,3 @@ Star this repository if it is useful for you.
     EXPOSE 995  
     # IMAPS  
     EXPOSE 993
-    
-    # MailBox  
-    VOLUME /mailbox
-    # DKIM  
-    VOLUME /keys
