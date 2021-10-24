@@ -157,10 +157,8 @@ RUN { \
     echo 'rm -f /var/log/maillog'; \
     echo 'touch /var/log/maillog'; \
     echo 'if [ ! -e /ssl_certs/cert.pem ] || [ ! -e /ssl_certs/key.pem ]; then'; \
-    echo '  openssl genrsa -aes256 -passout pass:dummy -out "/ssl_certs/key.pass.pem" 2048 &>/dev/null'; \
-    echo '  openssl rsa -passin pass:dummy -in "/ssl_certs/key.pass.pem" -out "/ssl_certs/key.pem" &>/dev/null'; \
-    echo '  rm -f /ssl_certs/key.pass.pem'; \
-    echo '  openssl req -new -sha384 -key "/ssl_certs/key.pem" -subj "/CN=${HOST_NAME}" -out "/ssl_certs/csr.pem"'; \
+    echo '  openssl genrsa -out "/ssl_certs/key.pem" 2048 &>/dev/null'; \
+    echo '  openssl req -new -key "/ssl_certs/key.pem" -subj "/CN=${HOSTNAME}" -out "/ssl_certs/csr.pem"'; \
     echo '  openssl x509 -req -days 36500 -in "/ssl_certs/csr.pem" -signkey "/ssl_certs/key.pem" -out "/ssl_certs/cert.pem" &>/dev/null'; \
     echo 'fi'; \
     echo 'sed -i "s/^\(smtpd_sasl_auth_enable =\).*/\1 yes/" /etc/postfix/main.cf'; \
@@ -200,7 +198,7 @@ RUN { \
     echo 'sed -i '\''/^# BEGIN SMTP SETTINGS$/,/^# END SMTP SETTINGS$/d'\'' /etc/postfix/main.cf'; \
     echo '{'; \
     echo 'echo "# BEGIN SMTP SETTINGS"'; \
-    echo 'echo "myhostname = ${HOST_NAME}"'; \
+    echo 'echo "myhostname = ${HOSTNAME}"'; \
     echo 'echo "mydomain = ${DOMAIN_NAME}"'; \
     echo 'echo "smtpd_banner = \$myhostname ESMTP"'; \
     echo 'echo "virtual_mailbox_domains = ${DOMAIN_NAME}"'; \
@@ -237,7 +235,7 @@ RUN { \
     echo '  sed -i "s/^\(smtpd_milters .*\)/\1,inet:localhost:8893/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8893/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^#* *\(TrustedAuthservIDs\) .*/\1 ${HOST_NAME}/" /etc/opendmarc.conf'; \
+    echo '  sed -i "s/^#* *\(TrustedAuthservIDs\) .*/\1 ${HOSTNAME}/" /etc/opendmarc.conf'; \
     echo 'fi'; \
     echo 'exec "$@"'; \
     } > /usr/local/bin/entrypoint.sh; \
@@ -245,7 +243,7 @@ RUN { \
 
 ENV TIMEZONE Asia/Tokyo
 
-ENV HOST_NAME mail.example.com
+ENV HOSTNAME mail.example.com
 ENV DOMAIN_NAME example.com
 
 ENV MAILBOX_SIZE_LIMIT 0
