@@ -15,7 +15,7 @@ Star this repository if it is useful for you.
     
     ENV TIMEZONE Asia/Tokyo
     
-    ENV HOST_NAME mail.example.com  
+    ENV HOSTNAME mail.example.com  
     ENV DOMAIN_NAME example.com
     
     ENV MAILBOX_SIZE_LIMIT 0  
