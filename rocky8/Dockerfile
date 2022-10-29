@@ -83,7 +83,7 @@ RUN dnf -y install dovecot; \
 
 # opendkim
 RUN mkdir /dkim_keys; \
-    dnf -y install opendkim glibc-locale-source; \
+    dnf -y install opendkim opendkim-tools glibc-locale-source; \
     sed -i 's/^\(Mode\t\).*/\1sv/' /etc/opendkim.conf; \
     sed -i 's/^\(SoftwareHeader\t\).*/\1no/' /etc/opendkim.conf; \
     sed -i 's/^# *\(Domain\t.*\)/\1/' /etc/opendkim.conf; \
