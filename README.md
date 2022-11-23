@@ -5,7 +5,7 @@ Star this repository if it is useful for you.
 [![license](https://img.shields.io/github/license/takeyamajp/docker-mail-server.svg)](https://github.com/takeyamajp/docker-mail-server/blob/master/LICENSE)
 
 ### Supported tags and respective Dockerfile links  
-- [`latest`, `rocky8`](https://github.com/takeyamajp/docker-mail-server/blob/master/rocky8/Dockerfile) (Rocky Linux)
+- [`latest`, `rocky8`](https://github.com/takeyamajp/docker-mail-server/blob/master/rocky8/Dockerfile) (Rocky Linux) [`alma8`](https://github.com/takeyamajp/docker-mail-server/blob/master/alma8/Dockerfile) (AlmaLinux)
 - [`centos8`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos8/Dockerfile) (We have finished support for CentOS 8.)
 - [`centos7`](https://github.com/takeyamajp/docker-mail-server/blob/master/centos7/Dockerfile)
 
