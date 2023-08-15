@@ -15,6 +15,7 @@ RUN mkdir /mailbox; \
 RUN dnf -y install epel-release; \
     dnf -y install postfix cyrus-sasl-plain cyrus-sasl-md5; \
     sed -i 's/^\(inet_interfaces =\) .*/\1 all/' /etc/postfix/main.cf; \
+    sed -i 's/^\(inet_protocols =\) .*/\1 ipv4/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_cert_file =\) .*/\1 \/ssl_certs\/cert.pem/' /etc/postfix/main.cf; \
     sed -i 's/^\(smtpd_tls_key_file =\) .*/\1 \/ssl_certs\/key.pem/' /etc/postfix/main.cf; \
     { \
@@ -85,9 +86,10 @@ RUN dnf -y install dovecot; \
 RUN mkdir /dkim_keys; \
     dnf -y install opendkim opendkim-tools glibc-locale-source; \
     sed -i 's/^\(Mode\t\).*/\1sv/' /etc/opendkim.conf; \
+    sed -i 's/^\(UserID\t\).*/\1opendkim:mail/' /etc/opendkim.conf; \
     sed -i 's/^\(SoftwareHeader\t\).*/\1no/' /etc/opendkim.conf; \
     sed -i 's/^# *\(Domain\t.*\)/\1/' /etc/opendkim.conf; \
-    echo 'smtpd_milters = inet:localhost:8891' >> /etc/postfix/main.cf; \
+    echo 'smtpd_milters = ' >> /etc/postfix/main.cf; \
     echo 'non_smtpd_milters = $smtpd_milters' >> /etc/postfix/main.cf; \
     echo 'milter_default_action = accept' >> /etc/postfix/main.cf; \
     dnf clean all;
@@ -98,7 +100,6 @@ RUN dnf -y install opendmarc; \
     sed -i 's/^# *\(IgnoreAuthenticatedClients\) .*/\1 true/' /etc/opendmarc.conf; \
     sed -i 's/^# *\(RejectFailures\) .*/\1 true/' /etc/opendmarc.conf; \
     sed -i 's/^# *\(RequiredHeaders\) .*/\1 true/' /etc/opendmarc.conf; \
-    sed -i 's/^\(smtpd_milters = .*\)/\1,inet:localhost:8893/' /etc/postfix/main.cf; \
     dnf clean all;
 
 # rsyslog
@@ -214,7 +215,7 @@ RUN { \
     echo 'sed -i "s/^\(non_smtpd_milters .*\)/#\1/" /etc/postfix/main.cf'; \
     echo 'if [ ${ENABLE_DKIM,,} = "true" ]; then'; \
     echo '  mv /etc/supervisord.d/opendkim.disabled /etc/supervisord.d/opendkim.ini'; \
-    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8891/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 local:\/run\/opendkim\/opendkim.sock/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^\(Domain\t\).*/\1${DOMAIN_NAME}/" /etc/opendkim.conf'; \
     echo '  sed -i "s/^\(Selector\t\).*/\1${DKIM_SELECTOR}/" /etc/opendkim.conf'; \
@@ -222,6 +223,7 @@ RUN { \
     echo '  if [ ! -e /dkim_keys/${DKIM_SELECTOR}.private ] || [ ! -e /dkim_keys/${DKIM_SELECTOR}.txt ]; then'; \
     echo '    opendkim-genkey -b ${DKIM_KEY_LENGTH} -d ${DOMAIN_NAME} -s ${DKIM_SELECTOR} -D /dkim_keys'; \
     echo '  fi'; \
+    echo '  chown -R opendkim:mail /run/opendkim'; \
     echo '  chown -R opendkim:opendkim /dkim_keys'; \
     echo '  chmod o-rwx /dkim_keys/${DKIM_SELECTOR}.private'; \
     echo '  cat /dkim_keys/${DKIM_SELECTOR}.txt'; \
@@ -231,8 +233,8 @@ RUN { \
     echo 'fi'; \
     echo 'if [ ${ENABLE_DMARC,,} = "true" ]; then'; \
     echo '  mv /etc/supervisord.d/opendmarc.disabled /etc/supervisord.d/opendmarc.ini'; \
-    echo '  sed -i "s/^\(smtpd_milters .*\)/\1,inet:localhost:8893/" /etc/postfix/main.cf'; \
-    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 inet:localhost:8893/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^\(smtpd_milters .*\)/\1,local:\/run\/opendmarc\/opendmarc.sock/" /etc/postfix/main.cf'; \
+    echo '  sed -i "s/^#\(smtpd_milters =\).*/\1 local:\/run\/opendmarc\/opendmarc.sock/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#\(non_smtpd_milters .*\)/\1/" /etc/postfix/main.cf'; \
     echo '  sed -i "s/^#* *\(TrustedAuthservIDs\) .*/\1 ${HOSTNAME}/" /etc/opendmarc.conf'; \
     echo 'fi'; \
